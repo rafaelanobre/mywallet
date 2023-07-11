@@ -79,7 +79,7 @@ export default function HomePage() {
                   <strong data-test="registry-name">{transacao.descricao}</strong>
                 </div>
                 <Value data-test="registry-amount" color={transacao.tipo === "entrada" ? "positivo" : "negativo"}>
-                {`R$ ${numeral(transacao.valor).format('R$0.0,00')}`}
+                {`R$ ${Number(transacao.valor).toFixed(2).replace('.', ',')}`}
                 </Value>
               </ListItemContainer>
             ))}
@@ -88,7 +88,7 @@ export default function HomePage() {
           <article>
             <strong>Saldo</strong>
             <Value data-test="total-amount" color={saldo >= 0 ? "positivo" : "negativo"}>
-            {`R$ ${numeral(saldo).format('R$0.0,00')}`}
+            {`R$ ${Number(saldo).toFixed(2).replace('.', ',')}`}
             </Value>
           </article>
         </>
