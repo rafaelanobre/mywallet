@@ -2,23 +2,29 @@ import styled from "styled-components"
 import { Link, useNavigate } from "react-router-dom"
 import MyWalletLogo from "../components/MyWalletLogo"
 import { useContext, useState } from "react";
-import { BASEURL } from "../constants/urls";
 import axios from "axios";
+import { UserContext } from "../contexts/UserContext.jsx";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [senha, setSenha] = useState("");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const {user, setUser} = useContext(UserContext);
+  const url = import.meta.env.VITE_API_URL;
 
   function signin(e){
     e.preventDefault();
     setLoading(true);
 
-    axios.post(`${BASEURL}/`,{email, senha: password} )
+    axios.post(`${url}/`,{email, senha} )
     .then(resp =>{
-      console.log(resp.data);
       setLoading(false);
+      console.log(resp.data);
+      const token = resp.data;
+      setUser(token);
+      console.log(JSON.stringify(token));
+      localStorage.setItem('user', JSON.stringify(token));
       navigate(`/home`);
     })
     .catch(error =>{
@@ -44,9 +50,9 @@ export default function SignInPage() {
     <SingInContainer>
       <form onSubmit={signin}>
         <MyWalletLogo />
-        <input required placeholder="E-mail" type="email" onChange={(e) => setEmail(e.target.value)} disabled={loading} />
-        <input required placeholder="Senha" type="password" autocomplete="new-password" onChange={(e) => setPassword(e.target.value)} disabled={loading} />
-        <button type="submit" disabled={loading}>Entrar</button>
+        <input required placeholder="E-mail" type="email" onChange={(e) => setEmail(e.target.value)} disabled={loading} data-test="email" />
+        <input required placeholder="Senha" type="password" autocomplete="new-password" onChange={(e) => setSenha(e.target.value)} disabled={loading} data-test="password" />
+        <button type="submit" disabled={loading} data-test="sign-in-submit" >Entrar</button>
       </form>
 
       <Link to='/cadastro'>

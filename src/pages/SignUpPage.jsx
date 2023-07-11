@@ -2,28 +2,28 @@ import { Link, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import MyWalletLogo from "../components/MyWalletLogo"
 import { useState } from "react";
-import { BASEURL } from "../constants/urls";
 import axios from "axios";
 
 export default function SignUpPage() {
-  const [name, setName] = useState("");
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmSenha, setConfirmSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const url = import.meta.env.VITE_API_URL;
 
   function signup (e){
     e.preventDefault();
     setLoading(true);
 
-    if(password !== confirmPassword){
+    if(senha !== confirmSenha){
       alert("As senhas não são iguais");
       setLoading(false);
       return;
     }
   
-    axios.post(`${BASEURL}/cadastro`, { name, email, password })
+    axios.post(`${url}/cadastro`, { nome, email, senha })
     .then(resp =>{
       setLoading(false);
       navigate(`/`)})
@@ -46,11 +46,11 @@ export default function SignUpPage() {
     <SingUpContainer>
       <form onSubmit={signup}>
         <MyWalletLogo />
-        <input required placeholder="Nome" type="text" onChange={(e) => setName(e.target.value)} disabled={loading} />
-        <input required placeholder="E-mail" type="email" onChange={(e) => setEmail(e.target.value)} disabled={loading} />
-        <input required placeholder="Senha" type="password" autocomplete="new-password" onChange={(e) => setPassword(e.target.value)} disabled={loading} />
-        <input required placeholder="Confirme a senha" type="password" autocomplete="new-password" onChange={(e) => setConfirmPassword(e.target.value)} disabled={loading} />
-        <button type="submit">Cadastrar</button>
+        <input required placeholder="Nome" type="text" onChange={(e) => setNome(e.target.value)} disabled={loading} data-test="name" />
+        <input required placeholder="E-mail" type="email" onChange={(e) => setEmail(e.target.value)} disabled={loading} data-test="email" />
+        <input required placeholder="Senha" type="password" autocomplete="new-password" onChange={(e) => setSenha(e.target.value)} disabled={loading} data-test="password" />
+        <input required placeholder="Confirme a senha" type="password" autocomplete="new-password" onChange={(e) => setConfirmSenha(e.target.value)} disabled={loading} data-test="conf-password" />
+        <button type="submit" data-test="sign-up-submit">Cadastrar</button>
       </form>
 
       <Link to='/'>

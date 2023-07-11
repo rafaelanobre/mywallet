@@ -1,55 +1,120 @@
-import styled from "styled-components"
-import { BiExit } from "react-icons/bi"
-import { AiOutlineMinusCircle, AiOutlinePlusCircle } from "react-icons/ai"
+import styled from "styled-components";
+import { BiExit } from "react-icons/bi";
+import { AiOutlineMinusCircle, AiOutlinePlusCircle } from "react-icons/ai";
+import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from "../contexts/UserContext.jsx";
+import { useContext, useEffect, useState } from "react";
+import axios from "axios";
+import numeral from "numeral";
+
 
 export default function HomePage() {
+  const [nome, setNome] = useState('');
+  const [transacoes, setTransacoes] = useState([]);
+  const [saldo, setSaldo] = useState(0);
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserContext);
+  const token = user;
+  const config = {
+    headers: {
+        Authorization:`Bearer ${token}`
+    }
+  }
+  const url = import.meta.env.VITE_API_URL;
+  console.log(config);
+  console.log(UserContext);
+
+  useEffect(() => {
+      axios.get(`${url}/home`, config)
+      .then((resp) =>{
+          console.log(resp.data);
+          setNome(resp.data.username);
+          setTransacoes(resp.data.transacoes.reverse());
+          setSaldo(resp.data.saldo);
+      })
+      .catch((error) =>{
+          if (error.response.status === 401){
+            alert ("Você foi desconectado, faça o login novamente.");
+            navigate('/');
+            return;
+          }
+          else alert (error.response.data);
+          navigate('/');
+      })
+  }, []);
+
+  function handleLogout(){
+    localStorage.removeItem('user');
+
+    axios.post(`${url}/logout`, config)
+      .then(() => {
+        localStorage.removeItem('user');
+        setUser({});
+        navigate('/');
+      })
+      .catch((error) => {
+        if (error.response.status === 401) navigate('/');
+        console.log(error);
+      });
+  }
+
+
   return (
     <HomeContainer>
       <Header>
-        <h1>Olá, Fulano</h1>
-        <BiExit />
+        <h1 data-test="user-name">Olá, {nome}</h1>
+        <BiExit data-test="logout" onClick={handleLogout}/>
       </Header>
 
       <TransactionsContainer>
-        <ul>
-          <ListItemContainer>
-            <div>
-              <span>30/11</span>
-              <strong>Almoço mãe</strong>
-            </div>
-            <Value color={"negativo"}>120,00</Value>
-          </ListItemContainer>
+      {transacoes.length === 0 ? (
+        <p>Não há registros de entrada ou saída</p>
+      ) : (
+        <>
+          <ul>
+            {transacoes.map((transacao, index) => (
+              <ListItemContainer key={index}>
+                <div>
+                  <span>{transacao.data}</span>
+                  <strong data-test="registry-name">{transacao.descricao}</strong>
+                </div>
+                <Value data-test="registry-amount" color={transacao.tipo === "entrada" ? "positivo" : "negativo"}>
+                {`R$ ${numeral(transacao.valor).format('R$0,0.00')}`}
+                </Value>
+              </ListItemContainer>
+            ))}
+          </ul>
 
-          <ListItemContainer>
-            <div>
-              <span>15/11</span>
-              <strong>Salário</strong>
-            </div>
-            <Value color={"positivo"}>3000,00</Value>
-          </ListItemContainer>
-        </ul>
-
-        <article>
-          <strong>Saldo</strong>
-          <Value color={"positivo"}>2880,00</Value>
-        </article>
+          <article>
+            <strong>Saldo</strong>
+            <Value data-test="total-amount" color={saldo >= 0 ? "positivo" : "negativo"}>
+            {`R$ ${numeral(saldo).format('R$0,0.00')}`}
+            </Value>
+          </article>
+        </>
+      )}
       </TransactionsContainer>
 
 
       <ButtonsContainer>
-        <button>
-          <AiOutlinePlusCircle />
-          <p>Nova <br /> entrada</p>
-        </button>
-        <button>
-          <AiOutlineMinusCircle />
-          <p>Nova <br />saída</p>
-        </button>
+        <Link to='/nova-transacao/entrada'>
+          <button data-test="new-income">
+            <AiOutlinePlusCircle />
+            <p>Nova <br /> entrada</p>
+          </button>
+        </Link>
+        <Link to='/nova-transacao/saida'>
+          <button data-test="new-expense">
+            <AiOutlineMinusCircle />
+            <p>Nova <br />saída</p>
+          </button>
+        </Link>
       </ButtonsContainer>
 
     </HomeContainer>
   )
 }
+
 
 const HomeContainer = styled.div`
   display: flex;
@@ -74,9 +139,23 @@ const TransactionsContainer = styled.article`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  p{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+    padding-left: 2em;
+    padding-right: 2em;
+    color: #868686;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: normal;
+  }
   article {
     display: flex;
-    justify-content: space-between;   
+    justify-content: space-between;
     strong {
       font-weight: 700;
       text-transform: uppercase;
@@ -90,7 +169,7 @@ const ButtonsContainer = styled.section`
   gap: 15px;
   
   button {
-    width: 50%;
+    width: 5em;
     height: 115px;
     font-size: 22px;
     text-align: left;
@@ -100,6 +179,9 @@ const ButtonsContainer = styled.section`
     p {
       font-size: 18px;
     }
+  }
+  Link {
+    width: 50%;
   }
 `
 const Value = styled.div`
