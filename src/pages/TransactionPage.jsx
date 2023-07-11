@@ -22,6 +22,7 @@ export default function TransactionsPage() {
   }
 
   useEffect(()=>{
+    const lsUser = JSON.parse(localStorage.getItem('user'));
     if(!lsUser === null){
       alert ("Você foi desconectado, faça o login novamente.");
       navigate('/');
