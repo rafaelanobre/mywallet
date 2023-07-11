@@ -21,6 +21,13 @@ export default function TransactionsPage() {
     }
   }
 
+  useEffect(()=>{
+    if(!lsUser === null){
+      alert ("Você foi desconectado, faça o login novamente.");
+      navigate('/');
+    }
+}, [])
+
   function addTransaction(e){
     e.preventDefault();
     setLoading(true);
